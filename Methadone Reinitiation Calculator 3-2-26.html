@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMMC OTP Methadone Reinitiation Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #0078d4;
+            margin-bottom: 25px;
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #0078d4;
+        }
+        
+        .calculate-btn {
+            background-color: #0078d4;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .calculate-btn:hover {
+            background-color: #005a9e;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .results.standard {
+            background-color: #e8f4fd;
+            border-left: 4px solid #0078d4;
+        }
+        
+        .results.provider {
+            background-color: #fff4e5;
+            border-left: 4px solid #ff8c00;
+        }
+        
+        .results.urgent {
+            background-color: #fef0f0;
+            border-left: 4px solid #d13438;
+        }
+        
+        .results h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .results.standard h2 {
+            color: #0078d4;
+        }
+        
+        .results.provider h2 {
+            color: #ff8c00;
+        }
+        
+        .results.urgent h2 {
+            color: #d13438;
+        }
+        
+        .dose-info {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .dose-day {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .dose-day strong {
+            color: #0078d4;
+        }
+        
+        .warning-box {
+            background: #fff9e6;
+            border: 1px solid #ffd700;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        .warning-box h3 {
+            color: #d68000;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .important {
+            font-weight: 600;
+            color: #d13438;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .late-arrival-section {
+            background: #fff9e6;
+            border: 2px solid #ff8c00;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .late-arrival-section h3 {
+            color: #d68000;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UMMC OTP Methadone Reinitiation Calculator</h1>
+        
+        <div class="info-box" style="margin-bottom: 25px;">
+            <p><strong>Important:</strong></p>
+            <ul style="margin-top: 10px;">
+                <li>These orders are written to facilitate patient-centered reinitiation of methadone after missed dosing days.</li>
+                <li>Dosing staff should remind patients that they may also choose an individual medical evaluation prior to dosing.</li>
+                <li>If dosing staff have any concerns about the safety or appropriateness of this procedure for any patient, they should contact the medical team or refer the patient for medical evaluation.</li>
+            </ul>
+        </div>
+        
+        <form id="calculatorForm">
+            <div class="form-group">
+                <label for="missedDoses">Number of consecutive missed doses:</label>
+                <select id="missedDoses" required>
+                    <option value="">Select...</option>
+                    <option value="2-3">2 or 3 consecutive missed doses</option>
+                    <option value="4">4 or more consecutive missed doses</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="usualDose">Patient's usual full dose (mg):</label>
+                <input type="number" id="usualDose" min="1" max="300" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="stableDays">How many of the 5 consecutive dosing days prior to the missed doses did the patient receive the usual full dose?</label>
+                <select id="stableDays" required>
+                    <option value="">Select...</option>
+                    <option value="5">5 days</option>
+                    <option value="4">4 days</option>
+                    <option value="3">3 days</option>
+                    <option value="2">2 days</option>
+                    <option value="0-1">0-1 days</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="calculate-btn">Calculate Reinitiation Orders</button>
+        </form>
+        
+        <div id="results" class="results"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                calculateReinitiation();
+            });
+            
+            // Event delegation for late arrival button
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'lateArrivalBtn') {
+                    showLateArrivalProtocol();
+                }
+            });
+        });
+        
+        function showLateArrivalProtocol() {
+            const lowestDose = parseInt(document.getElementById('lateArrivalLowestDose').value);
+            const missedDosesValue = document.getElementById('missedDoses').value;
+            
+            if (!lowestDose || isNaN(lowestDose)) {
+                alert('Please enter the lowest dose from the 5 days before the missed doses');
+                return;
+            }
+            
+            const lateDose = Math.min(50, lowestDose);
+            const resultsDiv = document.getElementById('results');
+            const is4Plus = missedDosesValue === '4';
+            
+            let resultHTML = `
+                <h2>⚠️ Late Arrival Protocol</h2>
+                <div class="dose-info">
+                    <div class="dose-day">
+                        <strong>TODAY'S DOSE:</strong> ${lateDose} mg
+                        <br><small>50mg or lowest dose from the 5 days before the missed days, whichever is lower</small>
+                    </div>
+                </div>
+            `;
+            
+            if (is4Plus) {
+                resultHTML += `
+                <div class="warning-box" style="background: #ffe6e6; border-color: #d13438;">
+                    <h3 style="color: #d13438;">Patient Communication Script (Required for 4+ Missed Doses):</h3>
+                    <p style="font-style: italic; margin: 10px 0; padding: 10px; background: white; border-left: 3px solid #d13438;">
+                        "If you have really cut down or stopped using opioids like methadone, pain pills, or dope for more than a few days, you may have lost your tolerance. If we start methadone again, we need to be careful about how quickly to go up. Can you go schedule an appointment right after I dose you so a provider can see you tomorrow? I'll put in a flag for tomorrow for you to see a provider right away when you get here tomorrow to get new orders."
+                    </p>
+                </div>
+                `;
+            }
+            
+            resultHTML += `
+                <div class="warning-box">
+                    <h3>Required Actions:</h3>
+                    <ul>
+                        <li><strong>Add STOP CHECK-IN flag in Methasoft</strong> for tomorrow: "Send to medical suite to complete or schedule medical visit prior to dosing. Patient arrived too late for appointment and/or titration after missed days."</li>
+                        <li><strong>Send message to Patient Dosing thread in Teams</strong> to inform medical providers</li>
+                    </ul>
+                </div>
+            `;
+            
+            resultsDiv.className = 'results urgent show';
+            resultsDiv.innerHTML = resultHTML;
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function calculateReinitiation() {
+            const missedDosesValue = document.getElementById('missedDoses').value;
+            const usualDoseValue = document.getElementById('usualDose').value;
+            const stableDaysValue = document.getElementById('stableDays').value;
+            
+            if (!missedDosesValue || !usualDoseValue || !stableDaysValue) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const usualDose = parseInt(usualDoseValue);
+            const stableDays = stableDaysValue;
+            
+            const resultsDiv = document.getElementById('results');
+            let resultHTML = '';
+            let resultClass = 'standard';
+            
+            // 2 or 3 missed doses
+            if (missedDosesValue === '2-3') {
+                // 3+ stable days -> continue at 100%
+                if (stableDays === '3' || stableDays === '4' || stableDays === '5') {
+                    resultHTML = `
+                        <h2>✓ Continue at Full Dose</h2>
+                        <div class="dose-info">
+                            <div class="dose-day">
+                                <strong>TODAY'S DOSE and ONGOING:</strong> ${usualDose} mg (100% of usual dose)
+                            </div>
+                        </div>
+                        <div class="info-box">
+                            <p><strong>Rationale:</strong> Patient received the same dose for at least 3 of the 5 consecutive dosing days prior to missing doses. No dose reduction needed.</p>
+                        </div>
+                    `;
+                }
+                // 2 stable days -> 75% restart
+                else if (stableDays === '2') {
+                    if (usualDose < 50) {
+                        resultHTML = `
+                            <h2>✓ Continue at Full Dose</h2>
+                            <div class="dose-info">
+                                <div class="dose-day">
+                                    <strong>TODAY'S DOSE and ONGOING:</strong> ${usualDose} mg (100% of usual dose)
+                                </div>
+                            </div>
+                            <div class="info-box">
+                                <p><strong>Rationale:</strong> Usual dose is less than 50mg, so patient can continue at usual dose without reduction.</p>
+                            </div>
+                        `;
+                    } else {
+                        const seventyFivePercent = Math.round(usualDose * 0.75);
+                        
+                        if (usualDose >= 50 && usualDose <= 67) {
+                            resultHTML = `
+                                <h2>Reduced Restart with Quick Return</h2>
+                                <p style="margin-bottom: 15px;"><strong>Patient may choose between two restart options:</strong></p>
+                                
+                                <div class="dose-info" style="background: #e8f4fd; border-left: 3px solid #0078d4;">
+                                    <h3 style="color: #0078d4; margin-bottom: 10px; font-size: 16px;">OPTION 1: Start at 75% (${seventyFivePercent} mg)</h3>
+                                    <div class="dose-day">
+                                        <strong>DAY 1 (Today):</strong> ${seventyFivePercent} mg (75% of usual)
+                                    </div>
+                                    <div class="dose-day">
+                                        <strong>DAY 2 and ONGOING:</strong> ${usualDose} mg (100% of usual dose)
+                                    </div>
+                                </div>
+                                
+                                <div class="dose-info" style="background: #f0f8ff; border-left: 3px solid #0078d4; margin-top: 15px;">
+                                    <h3 style="color: #0078d4; margin-bottom: 10px; font-size: 16px;">OPTION 2: Start at 50 mg</h3>
+                                    <div class="dose-day">
+                                        <strong>DAY 1 (Today):</strong> 50 mg
+                                    </div>
+                                    <div class="dose-day">
+                                        <strong>DAY 2 and ONGOING:</strong> ${usualDose} mg (100% of usual dose)
+                                    </div>
+                                </div>
+                                
+                                <div class="info-box">
+                                    <p><strong>Rationale:</strong> Patient received the same dose for 2 of the 5 consecutive dosing days prior to missing doses.</p>
+                                </div>
+                            `;
+                        } else {
+                            resultHTML = `
+                                <h2>Reduced Restart with Quick Return</h2>
+                                <div class="dose-info">
+                                    <div class="dose-day">
+                                        <strong>DAY 1 (Today):</strong> ${seventyFivePercent} mg (75% of usual)
+                                    </div>
+                                    <div class="dose-day">
+                                        <strong>DAY 2 and ONGOING:</strong> ${usualDose} mg (100% of usual dose)
+                                    </div>
+                                </div>
+                                <div class="info-box">
+                                    <p><strong>Rationale:</strong> Patient received the same dose for 2 of the 5 consecutive dosing days prior to missing doses.</p>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                // 0-1 stable days -> contact provider
+                else if (stableDays === '0-1') {
+                    resultClass = 'provider';
+                    resultHTML = `
+                        <h2>Contact Provider Required</h2>
+                        <p><strong>Patient had not received the same dose for 2 of the 5 consecutive dosing days prior to missing doses.</strong></p>
+                        <p>This may be due to other missed dosing days or because the patient is titrating their dose up or down.</p>
+                        <div class="warning-box">
+                            <h3>Action Required:</h3>
+                            <p>Dosing nurse to contact an available provider for individualized re-initiation orders.</p>
+                        </div>
+                        
+                        <div class="late-arrival-section">
+                            <h3>⏰ Late Arrival (Less than 5 minutes until dosing closes)?</h3>
+                            <p style="margin-bottom: 10px;">If unable to contact provider due to time constraints:</p>
+                            <div class="form-group">
+                                <label for="lateArrivalLowestDose">Lowest dose from 5 days before missed doses (mg):</label>
+                                <input type="number" id="lateArrivalLowestDose" min="1" max="300" style="width: 200px;">
+                            </div>
+                            <button id="lateArrivalBtn" class="calculate-btn" style="width: auto; padding: 10px 20px;">Show Late Arrival Protocol</button>
+                        </div>
+                    `;
+                }
+            }
+            // 4 or more missed doses
+            else if (missedDosesValue === '4') {
+                resultClass = 'provider';
+                resultHTML = `
+                    <h2>Provider Evaluation Required</h2>
+                    <p class="important">4 or more consecutive missed doses requires individualized assessment.</p>
+                    <div class="warning-box">
+                        <h3>Action Required:</h3>
+                        <ul>
+                            <li><strong>Contact an available provider</strong> for individualized re-initiation orders</li>
+                            <li>Provider may request a point-of-care (POC) urine toxicology if concerned about loss of tolerance or considering transition to Suboxone</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <p><strong>Rationale:</strong> After 4+ missed doses, there is significant risk of tolerance loss. Individual provider assessment is necessary to ensure patient safety.</p>
+                    </div>
+                    
+                    <div class="late-arrival-section">
+                        <h3>⏰ Late Arrival (Less than 5 minutes until dosing closes)?</h3>
+                        <p style="margin-bottom: 10px;">If unable to contact provider due to time constraints:</p>
+                        <div class="form-group">
+                            <label for="lateArrivalLowestDose">Lowest dose from 5 days before missed doses (mg):</label>
+                            <input type="number" id="lateArrivalLowestDose" min="1" max="300" style="width: 200px;">
+                        </div>
+                        <button id="lateArrivalBtn" class="calculate-btn" style="width: auto; padding: 10px 20px;">Show Late Arrival Protocol</button>
+                    </div>
+                `;
+            }
+            
+            // Add reminder about patient choice (only for standard protocols)
+            if (resultClass === 'standard') {
+                resultHTML += `
+                    <div class="info-box">
+                        <p><strong>Reminder:</strong> Patients may also choose to have an individual evaluation by medical staff prior to dosing.</p>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.className = `results ${resultClass} show`;
+            resultsDiv.innerHTML = resultHTML;
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
