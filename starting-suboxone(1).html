@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starting Suboxone</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #E8640A;
+    --orange-light: #FDF0E6;
+    --orange-dark: #B54C06;
+    --orange-mid: #F5A05A;
+    --ink: #1A1A18;
+    --ink-mid: #3D3D39;
+    --ink-light: #6B6B65;
+    --rule: #D8D5CC;
+    --surface: #F8F7F3;
+    --white: #FFFFFF;
+    --green: #2D6A4F;
+    --green-light: #E8F5EE;
+    --blue-card: #E6EFF8;
+    --blue-card-border: #B5D4F4;
+    --green-card: #E8F5EE;
+    --green-card-border: #9FE1CB;
+    --blue: #1A4E7A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .page-header {
+    background: var(--ink);
+    color: var(--white);
+    padding: 2rem 2.5rem 1.75rem;
+    border-bottom: 4px solid var(--orange);
+  }
+
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orange-mid);
+    margin-bottom: 0.5rem;
+  }
+
+  .header-title {
+    font-size: clamp(24px, 5vw, 38px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 0.4rem;
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+    color: #A0A09A;
+    font-weight: 300;
+  }
+
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 0.75rem;
+  }
+
+  /* FILMS GRID — 2mg left, 8mg right */
+  .films-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .film-card {
+    border: 1.5px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .film-card.green-bg {
+    background: var(--green-card);
+    border-color: var(--green-card-border);
+  }
+
+  .film-card.blue-bg {
+    background: var(--blue-card);
+    border-color: var(--blue-card-border);
+  }
+
+  .film-svg rect.film-body { fill: var(--orange); }
+  .film-svg rect.grid-cell { fill: rgba(255,255,255,0.35); stroke: rgba(255,255,255,0.5); stroke-width: 0.5; }
+  .film-svg text { font-family: 'IBM Plex Mono', monospace; fill: var(--white); font-weight: 500; }
+
+  .film-info-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+  }
+
+  .film-info-dose {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .film-info-count {
+    font-size: 13px;
+    color: var(--orange-dark);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .film-info-note {
+    font-size: 12px;
+    color: var(--ink-light);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* CUTTING GUIDE — 2mg only */
+  .cutting-section {
+    background: var(--white);
+    border: 1.5px solid var(--rule);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+    overflow-x: auto;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--ink-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .cut-guide-wrap {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .cut-guide-svg-area { flex-shrink: 0; }
+
+  .cut-table-area { flex: 1; min-width: 200px; }
+
+  .dosing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .dosing-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .dosing-table td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid var(--rule);
+    color: var(--ink-mid);
+    vertical-align: middle;
+  }
+
+  .dosing-table tr:last-child td { border-bottom: none; }
+
+  .frac-highlight {
+    display: inline-block;
+    background: var(--orange);
+    color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.4;
+  }
+
+  /* PROTOCOL TIMELINE */
+  .timeline {
+    position: relative;
+    margin-bottom: 2.5rem;
+  }
+
+  .timeline-track {
+    position: absolute;
+    left: 28px;
+    top: 16px;
+    bottom: 16px;
+    width: 2px;
+    background: var(--rule);
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+  }
+
+  .step-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid var(--orange);
+    background: var(--white);
+    margin-top: 14px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 20px;
+  }
+
+  .step-dot.done { background: var(--orange); }
+  .step-dot-inner { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+  .step-dot.done .step-dot-inner { background: var(--white); }
+
+  .step-card {
+    flex: 1;
+    background: var(--white);
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+
+  .step-card:hover { border-color: var(--orange-mid); }
+
+  .step-card.active {
+    border-color: var(--orange);
+    background: var(--orange-light);
+  }
+
+  .step-card.completed {
+    border-color: var(--rule);
+    background: #F2F2EF;
+  }
+
+  .step-card.completed .step-dose,
+  .step-card.completed .step-timing { opacity: 0.5; }
+
+  .step-left { display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 0; }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-light);
+    min-width: 18px;
+    flex-shrink: 0;
+  }
+
+  .step-dose-block { min-width: 54px; flex-shrink: 0; }
+
+  .step-dose {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .step-dose sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-light);
+    vertical-align: baseline;
+  }
+
+  .step-reps {
+    font-size: 11px;
+    color: var(--orange-dark);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* mini film graphic in each step */
+  .step-film-mini { flex-shrink: 0; }
+
+  .step-timing {
+    font-size: 11px;
+    color: var(--ink-light);
+    text-align: right;
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+
+  .step-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .checkmark {
+    display: none;
+    width: 10px;
+    height: 10px;
+  }
+
+  .step-card.completed .checkmark { display: block; }
+
+  /* MAINTENANCE */
+  .maintenance-card {
+    background: var(--blue-card);
+    border: 1.5px solid var(--blue-card-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .maint-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .maint-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 4px;
+  }
+
+  .maint-dose {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: -0.03em;
+    margin-top: 6px;
+  }
+
+  .maint-desc {
+    font-size: 13px;
+    color: var(--blue);
+    opacity: 0.8;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    background: var(--white);
+    border: 1.5px solid var(--rule);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-light);
+    margin-bottom: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .progress-bar-bg {
+    height: 8px;
+    background: var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink-light);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .reset-btn:hover { border-color: var(--orange); color: var(--orange-dark); }
+
+  .encouragement {
+    background: #FAEEDA;
+    border-left: 3px solid var(--orange);
+    border-radius: 0 8px 8px 0;
+    padding: 0.85rem 1.1rem;
+    margin-bottom: 2rem;
+    font-size: 14px;
+    color: #633806;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .films-grid { grid-template-columns: 1fr; }
+    .page-header { padding: 1.5rem 1.25rem 1.25rem; }
+    .main { padding: 1.25rem 1rem 3rem; }
+    .step-film-mini { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-eyebrow">Patient Medication Guide</div>
+  <h1 class="header-title">Starting Suboxone</h1>
+  <p class="header-subtitle">Low Dose Start Schedule · Suboxone film</p>
+</div>
+
+<div class="main">
+
+  <!-- GIVEN FILMS — 2mg LEFT, 8mg RIGHT -->
+  <div class="section-label">Films given to you today</div>
+  <div class="films-grid">
+
+    <!-- 2mg LEFT -->
+    <div class="film-card green-bg">
+      <div class="film-visual">
+        <svg class="film-svg" width="60" height="36" viewBox="0 0 60 36">
+          <rect class="film-body" x="2" y="2" width="56" height="32"/>
+          <line x1="16" y1="2" x2="16" y2="34" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>
+          <line x1="30" y1="2" x2="30" y2="34" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>
+          <line x1="44" y1="2" x2="44" y2="34" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>
+          <line x1="2" y1="18" x2="58" y2="18" stroke="rgba(255,255,255,0.45)" stroke-width="0.8"/>
+          <text x="9"  y="12" font-size="6" text-anchor="middle">.25</text>
+          <text x="23" y="12" font-size="6" text-anchor="middle">.25</text>
+          <text x="37" y="12" font-size="6" text-anchor="middle">.25</text>
+          <text x="51" y="12" font-size="6" text-anchor="middle">.25</text>
+          <text x="9"  y="28" font-size="6" text-anchor="middle">.25</text>
+          <text x="23" y="28" font-size="6" text-anchor="middle">.25</text>
+          <text x="37" y="28" font-size="6" text-anchor="middle">.25</text>
+          <text x="51" y="28" font-size="6" text-anchor="middle">.25</text>
+        </svg>
+      </div>
+      <div>
+        <div class="film-info-label">Film strength</div>
+        <div class="film-info-dose">2 mg</div>
+        <div class="film-info-count">2 films given</div>
+        <div class="film-info-note">Cut into pieces for your start-up doses</div>
+      </div>
+    </div>
+
+    <!-- 8mg RIGHT -->
+    <div class="film-card blue-bg">
+      <div class="film-visual">
+        <svg class="film-svg" width="60" height="36" viewBox="0 0 60 36">
+          <rect class="film-body" x="2" y="2" width="56" height="32"/>
+          <text x="30" y="21" font-size="8" text-anchor="middle">8 mg</text>
+        </svg>
+      </div>
+      <div>
+        <div class="film-info-label">Film strength</div>
+        <div class="film-info-dose">8 mg</div>
+        <div class="film-info-note">For maintenance dosing after your start</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 2mg CUTTING GUIDE ONLY -->
+  <div class="cutting-section">
+    <div class="section-label" style="margin-bottom:0.3rem">2 mg film cutting guide</div>
+    <div class="section-title" style="font-size:15px">How to cut your 2mg film</div>
+
+    <div class="cut-guide-wrap" style="margin-top:1.25rem">
+      <div class="cut-guide-svg-area">
+        <svg width="230" height="210" viewBox="0 0 230 210" font-family="IBM Plex Mono, monospace" font-size="9">
+
+          <!-- FULL 2mg FILM: grey base + all 8 cells orange (checklist style) -->
+          <rect x="10" y="8" width="116" height="34" fill="#D8D5CC"/>
+          <rect x="10" y="8" width="116" height="34" fill="#E8640A"/>
+          <line x1="39" y1="8"  x2="39" y2="42" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <line x1="68" y1="8"  x2="68" y2="42" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <line x1="97" y1="8"  x2="97" y2="42" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <line x1="10" y1="25" x2="126" y2="25" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <text x="24.5" y="19" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="53.5" y="19" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="82.5" y="19" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="111.5" y="19" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="24.5" y="35" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="53.5" y="35" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="82.5" y="35" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="111.5" y="35" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="132" y="22" fill="#3D3D39" font-size="9">= 2 mg</text>
+          <text x="132" y="34" fill="#6B6B65" font-size="8">whole film</text>
+
+          <!-- 0.25mg: grey base, 1 cell (top-left col) orange -->
+          <line x1="39" y1="54" x2="39" y2="100" stroke="#B54C06" stroke-width="1" stroke-dasharray="3,2"/>
+          <rect x="10" y="60" width="116" height="34" fill="#D8D5CC"/>
+          <rect x="10" y="60" width="29" height="17" fill="#E8640A"/>
+          <text x="24.5" y="71" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="50" y="71" fill="#3D3D39" font-size="10" font-weight="500">= 0.25 mg</text>
+          <text x="50" y="84" fill="#6B6B65" font-size="8">1 little piece  (1/8 film)</text>
+
+          <!-- 0.5mg: grey base, 1 full column orange -->
+          <line x1="39" y1="107" x2="39" y2="153" stroke="#B54C06" stroke-width="1" stroke-dasharray="3,2"/>
+          <rect x="10" y="112" width="116" height="34" fill="#D8D5CC"/>
+          <rect x="10" y="112" width="29" height="34" fill="#E8640A"/>
+          <line x1="10" y1="129" x2="39" y2="129" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <text x="24.5" y="123" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="24.5" y="140" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="50" y="124" fill="#3D3D39" font-size="10" font-weight="500">= 0.5 mg</text>
+          <text x="50" y="138" fill="#6B6B65" font-size="8">2 little pieces  (1/4 film)</text>
+
+          <!-- 1.0mg: grey base, 2 full columns orange -->
+          <line x1="68" y1="160" x2="68" y2="210" stroke="#B54C06" stroke-width="1" stroke-dasharray="3,2"/>
+          <rect x="10" y="165" width="116" height="34" fill="#D8D5CC"/>
+          <rect x="10" y="165" width="58" height="34" fill="#E8640A"/>
+          <line x1="39" y1="165" x2="39" y2="199" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <line x1="10" y1="182" x2="68" y2="182" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+          <text x="24.5" y="176" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="53.5" y="176" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="24.5" y="193" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="53.5" y="193" text-anchor="middle" fill="white" font-size="7">.25</text>
+          <text x="78" y="178" fill="#3D3D39" font-size="10" font-weight="500">= 1.0 mg</text>
+          <text x="78" y="192" fill="#6B6B65" font-size="8">4 little pieces  (1/2 film)</text>
+        </svg>
+      </div>
+
+      <div class="cut-table-area">
+        <table class="dosing-table">
+          <thead>
+            <tr>
+              <th>Dose</th>
+              <th>Cut</th>
+              <th>Little Pieces</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="font-size:14px">0.25 mg</strong></td>
+              <td><span class="frac-highlight">1/8 film</span></td>
+              <td>1 little piece</td>
+            </tr>
+            <tr>
+              <td><strong style="font-size:14px">0.5 mg</strong></td>
+              <td><span class="frac-highlight">1/4 film</span></td>
+              <td>2 little pieces</td>
+            </tr>
+            <tr>
+              <td><strong style="font-size:14px">1.0 mg</strong></td>
+              <td><span class="frac-highlight">1/2 film</span></td>
+              <td>4 little pieces</td>
+            </tr>
+            <tr>
+              <td><strong style="font-size:14px">2.0 mg</strong></td>
+              <td><span class="frac-highlight">Whole film</span></td>
+              <td>8 little pieces / full strip</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:var(--ink-light);margin-top:0.85rem;line-height:1.5;">Cut the film into 8 equal pieces. Each piece = 0.25 mg. Build every dose from multiples of that.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL STEPS -->
+  <div class="section-label">Initiation day checklist</div>
+  <div class="section-title">Dosing steps — tap each to mark complete</div>
+  <p class="section-desc">Place each dose under your tongue and let it dissolve. Wait at least 1 hour between doses, up to 2 hours. Work through all steps in order.</p>
+
+  <div class="encouragement">
+    Stick with it, even if you use more dope while you are doing it.
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span id="progress-text">0 / 9 doses</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">↺ Reset checklist</button>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-track"></div>
+
+    <!-- Helper: mini film SVGs are inline in each step card -->
+
+    <!-- Steps 1–4: 0.25mg -->
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-dot" id="dot-0"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-0" onclick="toggleStep(0)">
+        <div class="step-left">
+          <div class="step-num">01</div>
+          <!-- mini film: 1 cell highlighted out of 8×2 -->
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="14.5" height="17" fill="#E8640A"/>
+            <text x="8" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">0.25 <sub>mg</sub></div>
+            <div class="step-reps">1 of 4</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/8 of a 2mg film</span></div>
+          <div class="step-check" id="check-0">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-dot" id="dot-1"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-1" onclick="toggleStep(1)">
+        <div class="step-left">
+          <div class="step-num">02</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="14.5" height="17" fill="#E8640A"/>
+            <text x="8" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">0.25 <sub>mg</sub></div>
+            <div class="step-reps">2 of 4</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/8 of a 2mg film</span></div>
+          <div class="step-check" id="check-1">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-dot" id="dot-2"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-2" onclick="toggleStep(2)">
+        <div class="step-left">
+          <div class="step-num">03</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="14.5" height="17" fill="#E8640A"/>
+            <text x="8" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">0.25 <sub>mg</sub></div>
+            <div class="step-reps">3 of 4</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/8 of a 2mg film</span></div>
+          <div class="step-check" id="check-2">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-dot" id="dot-3"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-3" onclick="toggleStep(3)">
+        <div class="step-left">
+          <div class="step-num">04</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="14.5" height="17" fill="#E8640A"/>
+            <text x="8" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">0.25 <sub>mg</sub></div>
+            <div class="step-reps">4 of 4</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/8 of a 2mg film</span></div>
+          <div class="step-check" id="check-3">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps 5–6: 0.5mg — 2 cells highlighted -->
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-dot" id="dot-4"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-4" onclick="toggleStep(4)">
+        <div class="step-left">
+          <div class="step-num">05</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="14.5" height="34" fill="#E8640A"/>
+            <line x1="1" y1="18" x2="15.5" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>
+            <text x="8" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="8" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">0.5 <sub>mg</sub></div>
+            <div class="step-reps">1 of 2</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/4 of a 2mg film</span></div>
+          <div class="step-check" id="check-4">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-dot" id="dot-5"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-5" onclick="toggleStep(5)">
+        <div class="step-left">
+          <div class="step-num">06</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="14.5" height="34" fill="#E8640A"/>
+            <line x1="1" y1="18" x2="15.5" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>
+            <text x="8" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="8" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">0.5 <sub>mg</sub></div>
+            <div class="step-reps">2 of 2</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/4 of a 2mg film</span></div>
+          <div class="step-check" id="check-5">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps 7–8: 1mg — 4 cells = half the film width -->
+    <!-- Step 7 -->
+    <div class="step">
+      <div class="step-dot" id="dot-6"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-6" onclick="toggleStep(6)">
+        <div class="step-left">
+          <div class="step-num">07</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="29" height="34" fill="#E8640A"/>
+            <line x1="15.5" y1="1" x2="15.5" y2="35" stroke="rgba(255,255,255,0.45)" stroke-width="0.6"/>
+            <line x1="1"    y1="18" x2="30"  y2="18" stroke="rgba(255,255,255,0.45)" stroke-width="0.6"/>
+            <text x="8"    y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="22.5" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="8"    y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="22.5" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">1.0 <sub>mg</sub></div>
+            <div class="step-reps">1 of 2</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/2 of a 2mg film</span></div>
+          <div class="step-check" id="check-6">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step">
+      <div class="step-dot" id="dot-7"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-7" onclick="toggleStep(7)">
+        <div class="step-left">
+          <div class="step-num">08</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#D8D5CC"/>
+            <rect x="1" y="1" width="29" height="34" fill="#E8640A"/>
+            <line x1="15.5" y1="1" x2="15.5" y2="35" stroke="rgba(255,255,255,0.45)" stroke-width="0.6"/>
+            <line x1="1"    y1="18" x2="30"  y2="18" stroke="rgba(255,255,255,0.45)" stroke-width="0.6"/>
+            <text x="8"    y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="22.5" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="8"    y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="22.5" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">1.0 <sub>mg</sub></div>
+            <div class="step-reps">2 of 2</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">1–2 hrs<br><span class="frac-highlight">1/2 of a 2mg film</span></div>
+          <div class="step-check" id="check-7">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 9: 2mg — full film -->
+    <div class="step">
+      <div class="step-dot" id="dot-8"><div class="step-dot-inner"></div></div>
+      <div class="step-card" id="card-8" onclick="toggleStep(8)">
+        <div class="step-left">
+          <div class="step-num">09</div>
+          <svg class="step-film-mini" width="60" height="36" viewBox="0 0 60 36">
+            <rect x="1" y="1" width="58" height="34" fill="#E8640A"/>
+            <line x1="15.5" y1="1" x2="15.5" y2="35" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
+            <line x1="30"   y1="1" x2="30"   y2="35" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
+            <line x1="44.5" y1="1" x2="44.5" y2="35" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
+            <line x1="1"    y1="18" x2="59"  y2="18" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
+            <text x="8"    y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="22.5" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="37"   y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="51.5" y="12" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="8"    y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="22.5" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="37"   y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+            <text x="51.5" y="28" font-family="IBM Plex Mono,monospace" font-size="5" fill="white" text-anchor="middle">.25</text>
+          </svg>
+          <div class="step-dose-block">
+            <div class="step-dose">2.0 <sub>mg</sub></div>
+            <div class="step-reps">Final dose</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-timing">Single dose<br><span class="frac-highlight">1 whole 2mg film</span></div>
+          <div class="step-check" id="check-8">
+            <svg class="checkmark" viewBox="0 0 10 10"><polyline points="1.5,5.5 4,8 8.5,2" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAINTENANCE -->
+  <div class="section-label">After your start</div>
+  <div class="maintenance-card">
+    <div class="maint-icon">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <rect x="3" y="3" width="16" height="16" rx="3" fill="white" opacity="0.25"/>
+        <rect x="6" y="6" width="4" height="4" rx="1" fill="white"/>
+        <rect x="12" y="6" width="4" height="4" rx="1" fill="white"/>
+        <rect x="6" y="12" width="4" height="4" rx="1" fill="white"/>
+        <rect x="12" y="12" width="4" height="4" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <div>
+      <div class="maint-title">Maintenance dosing</div>
+      <div class="maint-dose">8 mg twice daily (BID)</div>
+      <div class="maint-desc">Take as needed (PRN) using your 8mg films. Contact us before you run out.</div>
+    </div>
+  </div>
+
+  <!-- QR CODE -->
+  <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--rule);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+    <div>
+      <canvas id="qr-canvas"></canvas>
+    </div>
+    <div>
+      <div class="section-label" style="margin-bottom:0.3rem">Scan to open on your phone</div>
+      <div style="font-size:12px;color:var(--ink-light);line-height:1.6;max-width:260px;font-family:'IBM Plex Mono',monospace;word-break:break-all;">greenjeans8888.github.io/1001/starting-suboxone.html</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  const total = 9;
+  const state = new Array(total).fill(false);
+
+  function toggleStep(i) {
+    state[i] = !state[i];
+    updateUI();
+  }
+
+  function updateUI() {
+    const done = state.filter(Boolean).length;
+    document.getElementById('progress-text').textContent = done + ' / ' + total + ' doses';
+    document.getElementById('progress-fill').style.width = Math.round((done / total) * 100) + '%';
+
+    for (let i = 0; i < total; i++) {
+      const card = document.getElementById('card-' + i);
+      const dot = document.getElementById('dot-' + i);
+      const check = document.getElementById('check-' + i);
+
+      card.classList.remove('active', 'completed');
+      dot.classList.remove('done');
+      check.style.background = '';
+      check.style.borderColor = '';
+      check.querySelector('.checkmark').style.display = 'none';
+
+      if (state[i]) {
+        card.classList.add('completed');
+        dot.classList.add('done');
+        check.style.background = '#2D6A4F';
+        check.style.borderColor = '#2D6A4F';
+        check.querySelector('.checkmark').style.display = 'block';
+      } else {
+        const isNext = i === 0 || state[i - 1];
+        if (isNext) card.classList.add('active');
+      }
+    }
+  }
+
+  function resetAll() {
+    state.fill(false);
+    updateUI();
+  }
+
+  updateUI();
+
+  window.addEventListener('load', function() {
+    new QRCode(document.getElementById('qr-canvas'), {
+      text: 'https://greenjeans8888.github.io/1001/starting-suboxone.html',
+      width: 120,
+      height: 120,
+      colorDark: '#1A1A18',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+</script>
+</body>
+</html>
